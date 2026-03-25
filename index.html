@@ -1,10 +1,543 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Auditron</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditron - Proxy Interceptor tipo Burp Suite</title>
+    <meta name="description" content="Auditron es un addon para mitmproxy que transforma mitmproxy en una herramienta de interceptación de tráfico similar a Burp Suite, con capacidades de codificación, extracción de tokens e integración con IA.">
+    <meta name="author" content="Pavlov666">
+    <meta name="theme-color" content="#0a0c10">
+    <!-- Google Fonts & Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0c10;
+            color: #e6edf3;
+            line-height: 1.5;
+            scroll-behavior: smooth;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Header / Hero */
+        .hero {
+            background: linear-gradient(135deg, #0f1117 0%, #0a0c10 100%);
+            border-bottom: 1px solid #2d333b;
+            padding: 48px 0 32px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 30%, rgba(88, 166, 255, 0.08) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .hero-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 20px;
+        }
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: #1c2128;
+            padding: 8px 20px;
+            border-radius: 60px;
+            border: 1px solid #2d333b;
+            backdrop-filter: blur(4px);
+        }
+        .logo i {
+            font-size: 32px;
+            color: #58a6ff;
+        }
+        .logo h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #f0f6fc 0%, #c9d1d9 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .tagline {
+            font-size: 1.2rem;
+            color: #8b949e;
+            max-width: 700px;
+        }
+        .badge-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        .badge {
+            background: #161b22;
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border: 1px solid #2d333b;
+            transition: all 0.2s;
+        }
+        .badge i {
+            margin-right: 8px;
+            color: #58a6ff;
+        }
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 16px;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #1f6feb;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 40px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #3d444d;
+            color: #e6edf3;
+        }
+        .btn-outline:hover {
+            background: #1c2128;
+            border-color: #58a6ff;
+        }
+        .btn:hover {
+            background: #2c7aff;
+            transform: translateY(-2px);
+        }
+
+        /* Secciones */
+        section {
+            padding: 64px 0;
+            border-bottom: 1px solid #21262d;
+        }
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 32px;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .section-title i {
+            color: #58a6ff;
+            font-size: 28px;
+        }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin: 32px 0;
+        }
+        .card {
+            background: #0d1117;
+            border: 1px solid #2d333b;
+            border-radius: 20px;
+            padding: 24px;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .card:hover {
+            border-color: #58a6ff;
+            transform: translateY(-4px);
+        }
+        .card-icon {
+            font-size: 2.2rem;
+            color: #58a6ff;
+            margin-bottom: 16px;
+        }
+        .card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+        }
+        .card p {
+            color: #8b949e;
+        }
+
+        .code-block {
+            background: #010409;
+            border-radius: 16px;
+            padding: 20px;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            border: 1px solid #2d333b;
+            margin: 20px 0;
+        }
+        .code-block pre {
+            margin: 0;
+            color: #c9d1d9;
+        }
+
+        .steps {
+            background: #0d1117;
+            border-radius: 24px;
+            padding: 28px;
+            margin: 32px 0;
+            border: 1px solid #2d333b;
+        }
+        .step {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            align-items: flex-start;
+        }
+        .step-num {
+            background: #1f6feb20;
+            color: #58a6ff;
+            width: 32px;
+            height: 32px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            border: 1px solid #2d333b;
+        }
+        .step-content {
+            flex: 1;
+        }
+        .step-content code {
+            background: #1c2128;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+        }
+        th, td {
+            border: 1px solid #2d333b;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background: #161b22;
+        }
+
+        footer {
+            background: #06080c;
+            padding: 40px 0;
+            text-align: center;
+            color: #7d8590;
+            font-size: 0.9rem;
+        }
+        footer a {
+            color: #58a6ff;
+            text-decoration: none;
+        }
+        .donation {
+            background: #161b22;
+            border-radius: 24px;
+            padding: 24px;
+            margin: 24px 0;
+            text-align: center;
+            border: 1px solid #2d333b;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 16px;
+            }
+            .hero {
+                padding: 32px 0;
+            }
+            .section-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>!The power of Auditron!</h1>
-    <p>Bienvenidos a la cueva de El Palio,donde el poder de los sueños son realidad</p>
+
+<div class="hero">
+    <div class="container hero-content">
+        <div class="logo">
+            <i class="fas fa-shield-alt"></i>
+            <h1>Auditron</h1>
+        </div>
+        <p class="tagline">Proxy interceptor tipo Burp Suite · MITM addon para mitmproxy · Extracción automática de tokens · IA integrada (OpenAI)</p>
+        <div class="badge-group">
+            <span class="badge"><i class="fab fa-python"></i> Python 3.7+</span>
+            <span class="badge"><i class="fas fa-terminal"></i> mitmproxy</span>
+            <span class="badge"><i class="fas fa-brain"></i> OpenAI GPT</span>
+            <span class="badge"><i class="fas fa-code"></i> Base64 / Hex / JWT / Hash</span>
+        </div>
+        <div class="btn-group">
+            <a href="#install" class="btn"><i class="fas fa-download"></i> Instalación rápida</a>
+            <a href="#usage" class="btn btn-outline"><i class="fas fa-book"></i> Documentación</a>
+            <a href="https://github.com/Pavlov666/Auditron" class="btn btn-outline"><i class="fab fa-github"></i> GitHub</a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Features -->
+    <section id="features">
+        <div class="section-title">
+            <i class="fas fa-bolt"></i>
+            <h2>Características principales</h2>
+        </div>
+        <div class="cards">
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-network-wired"></i></div>
+                <h3>Interceptación total</h3>
+                <p>HTTP/HTTPS, WebSockets, headers, tokens, parámetros y cuerpos de petición/respuesta.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-code"></i></div>
+                <h3>Encoder / Decoder</h3>
+                <p>Base64, Hex, URL, HTML, ROT13, JWT, MD5, SHA1, SHA256, SHA512. Detección automática de formato.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-robot"></i></div>
+                <h3>IA con OpenAI</h3>
+                <p>Análisis automático de tráfico, detección de vulnerabilidades y sugerencias de seguridad (GPT‑3.5/4).</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-file-alt"></i></div>
+                <h3>Almacenamiento en .txt</h3>
+                <p>Cada intercambio se guarda en archivos con nombre <code>host_método_numero.txt</code>. Extrae tokens JWT, UUIDs e IDs automáticamente.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Installation & Setup -->
+    <section id="install">
+        <div class="section-title">
+            <i class="fas fa-terminal"></i>
+            <h2>Instalación y arranque</h2>
+        </div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-content"><strong>Clona el repositorio o descarga Auditron.py</strong><br>
+                    <code>git clone https://github.com/Pavlov666/Auditron.git</code> o descarga el archivo directo.
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-content"><strong>Crea un entorno virtual (recomendado)</strong><br>
+                    <code>python3 -m venv auditron-env</code><br>
+                    <code>source auditron-env/bin/activate</code>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-content"><strong>Instala mitmproxy y dependencias (IA opcional)</strong><br>
+                    <code>pip install mitmproxy openai</code> (para IA) o solo <code>pip install mitmproxy</code>.
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">4</div>
+                <div class="step-content"><strong>Ejecuta mitmproxy con Auditron</strong><br>
+                    <code>mitmproxy -s Auditron.py</code> (interfaz interactiva)<br>
+                    <code>mitmdump -s Auditron.py</code> (solo logs).
+                </div>
+            </div>
+        </div>
+        <p><i class="fas fa-info-circle"></i> Los logs se guardan en <code>~/auditron_captures/</code> por defecto. Puedes cambiarlo con <code>export AUDITRON_STORAGE_DIR="/tu/ruta"</code>.</p>
+    </section>
+
+    <!-- Configuración navegador / cert -->
+    <section>
+        <div class="section-title">
+            <i class="fas fa-globe"></i>
+            <h2>Configuración del navegador y certificado CA</h2>
+        </div>
+        <p>Para interceptar tráfico HTTPS, debes instalar el certificado de mitmproxy y configurar el proxy.</p>
+        <div class="code-block">
+            <pre>1. Inicia mitmproxy con Auditron.
+2. Abre el navegador y visita http://mitm.it
+3. Descarga el certificado para Linux y añádelo a las autoridades de confianza.
+4. Configura el proxy manual en el navegador: HTTP/HTTPS → 127.0.0.1:8080</pre>
+        </div>
+        <p><strong>Firefox:</strong> Ajustes → Configuración de red → Proxy manual.<br>
+        <strong>Chromium:</strong> lanzar con <code>--proxy-server="http://127.0.0.1:8080"</code> o usar extensión FoxyProxy.</p>
+    </section>
+
+    <!-- Uso / comandos -->
+    <section id="usage">
+        <div class="section-title">
+            <i class="fas fa-keyboard"></i>
+            <h2>Uso interactivo (mitmproxy)</h2>
+        </div>
+        <div class="cards">
+            <div class="card">
+                <h3><i class="fas fa-arrow-up"></i> / <i class="fas fa-arrow-down"></i></h3>
+                <p>Seleccionar flujo</p>
+                <h3 style="margin-top: 12px;"><i class="fas fa-edit"></i> e / E</h3>
+                <p>Editar request / response (inyectar valores, cambiar headers, body)</p>
+                <h3 style="margin-top: 12px;"><i class="fas fa-redo-alt"></i> r</h3>
+                <p>Replay (repetir solicitud)</p>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-filter"></i> f</h3>
+                <p>Filtrar flujos: <code>~m POST</code>, <code>~d example.com</code>, <code>~b secret</code></p>
+                <h3 style="margin-top: 12px;"><i class="fas fa-save"></i> S</h3>
+                <p>Guardar flujo seleccionado en archivo .mitm</p>
+                <h3 style="margin-top: 12px;"><i class="fas fa-terminal"></i> :script</h3>
+                <p>Ejecutar código Python personalizado</p>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-chart-line"></i> Extracción automática</h3>
+                <p>Tokens JWT, UUIDs, IDs en parámetros con "id". Se guardan en el archivo .txt generado.</p>
+                <h3 style="margin-top: 12px;"><i class="fas fa-shield-alt"></i> Inyección en tiempo real</h3>
+                <p>Modifica peticiones antes de que lleguen al servidor.</p>
+            </div>
+        </div>
+        <div class="code-block">
+            <strong>Ejemplo de inyección de token:</strong><br>
+            <pre>1. Selecciona el flujo con la cabecera Authorization.
+2. Pulsa e → request → busca la línea "Authorization: Bearer ..."
+3. Cambia el token, guarda (Ctrl+O) y sal (Ctrl+X)
+4. Pulsa a para enviar la petición modificada.</pre>
+        </div>
+    </section>
+
+    <!-- Herramienta de encoding/decoding -->
+    <section>
+        <div class="section-title">
+            <i class="fas fa-lock-open"></i>
+            <h2>Codificación/Decodificación desde terminal</h2>
+        </div>
+        <p>Auditron puede usarse como herramienta independiente para transformar datos.</p>
+        <div class="code-block">
+            <pre># Identificar codificación
+python3 Auditron.py --identify --data "SGVsbG8gV29ybGQ="
+
+# Codificar a Base64
+python3 Auditron.py --encode base64 --data "Hola mundo"
+
+# Decodificar JWT
+python3 Auditron.py --decode jwt --data "eyJhbGciOiJIUzI1NiIs...<token>"
+
+# Generar hash SHA256
+python3 Auditron.py --encode sha256 --data "texto sensible"</pre>
+        </div>
+        <p>Formatos soportados: base64, hex, url, html, rot13, jwt, md5, sha1, sha256, sha512.</p>
+        <p><i class="fas fa-plus-circle"></i> Puedes agregar <strong>codificadores personalizados</strong> mediante <code>register_custom_encoder("nombre", función.__code__)</code> desde la consola de mitmproxy o editando el script.</p>
+    </section>
+
+    <!-- IA con OpenAI -->
+    <section>
+        <div class="section-title">
+            <i class="fas fa-brain"></i>
+            <h2>Integración con OpenAI (GPT-3.5/4)</h2>
+        </div>
+        <p>Auditron puede analizar automáticamente cada flujo interceptado con IA o bajo demanda. Sigue estos pasos:</p>
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-content"><strong>Obtén tu API Key de OpenAI</strong> en <a href="https://platform.openai.com/api-keys" target="_blank">https://platform.openai.com/api-keys</a>.</div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-content"><strong>Exporta la clave</strong> antes de ejecutar:<br>
+                <code>export OPENAI_API_KEY="sk-..."</code> (puedes añadirla a <code>~/.bashrc</code>).</div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-content"><strong>Instala la dependencia</strong> en tu entorno virtual:<br>
+                <code>pip install openai</code></div>
+            </div>
+            <div class="step">
+                <div class="step-num">4</div>
+                <div class="step-content"><strong>Ejecuta mitmproxy</strong> con el script modificado (incluye la función <code>analyze_with_ai</code> con OpenAI). El script ya está preparado, solo activa la variable de entorno.</div>
+            </div>
+        </div>
+        <p>Por defecto el análisis se ejecuta después de cada respuesta. Puedes modificarlo en <code>response()</code> para analizar solo dominios específicos o bajo demanda con <code>:script exec analyze_current_flow()</code>.</p>
+        <div class="code-block">
+            <pre># Uso interactivo desde la línea de comandos de mitmproxy
+:script exec analyze_current_flow()</pre>
+        </div>
+        <p><i class="fas fa-exclamation-triangle"></i> <strong>Nota:</strong> Cada análisis consume tokens de OpenAI. Usa con moderación o activa solo para flujos específicos.</p>
+    </section>
+
+    <!-- Script de instalación automática -->
+    <section>
+        <div class="section-title">
+            <i class="fas fa-magic"></i>
+            <h2>Instalación automática (auditron-setup.sh)</h2>
+        </div>
+        <p>El repositorio incluye un script que crea el entorno virtual, instala dependencias y configura la IA de forma interactiva.</p>
+        <div class="code-block">
+            <pre>chmod +x auditron-setup.sh
+./auditron-setup.sh</pre>
+        </div>
+        <p>Te preguntará por tu API key de OpenAI (opcional), descargará el código y lanzará mitmproxy con Auditron.</p>
+    </section>
+
+    <!-- Donaciones / Apoyo -->
+    <div class="donation">
+        <i class="fas fa-heart" style="color: #f78166; font-size: 28px;"></i>
+        <h3 style="margin: 12px 0;">Apoya el proyecto</h3>
+        <p>Si Auditron te es útil, considera apoyar el desarrollo con una donación.</p>
+        <p><strong>BBVA Bancomer (México):</strong> Cuenta 1234567890 · CLABE 012345678901234567</p>
+        <p>o mediante <a href="https://github.com/sponsors/Pavlov666" style="color:#58a6ff;">GitHub Sponsors</a>.</p>
+        <small>¡Gracias por hacer crecer la comunidad de seguridad!</small>
+    </div>
+
+    <!-- FAQ / Problemas comunes -->
+    <section>
+        <div class="section-title">
+            <i class="fas fa-question-circle"></i>
+            <h2>Resolución de problemas comunes</h2>
+        </div>
+        <table>
+            <thead><tr><th>Problema</th><th>Solución</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>El navegador no carga páginas</td><td>Verifica que mitmproxy esté ejecutándose y el proxy configurado (127.0.0.1:8080). Instala el certificado CA en el navegador.</td></tr>
+                <tr><td>No se crean archivos .txt</td><td>Comprueba permisos de escritura en la carpeta de destino. Ejecuta con <code>-v</code> para ver logs.</td></tr>
+                <tr><td>No se extraen tokens JWT</td><td>Revisa que el token siga el patrón <code>eyJ...</code>. Puedes modificar la función <code>extract_tokens</code> en <code>Auditron.py</code>.</td></tr>
+                <tr><td>La IA no responde</td><td>Asegúrate de que <code>OPENAI_API_KEY</code> esté definida, que la librería <code>openai</code> esté instalada y que la cuenta tenga créditos.</td></tr>
+            </tbody>
+        </table>
+    </section>
+</div>
+
+<footer>
+    <div class="container">
+        <p><i class="fab fa-github"></i> <a href="https://github.com/Pavlov666/Auditron">github.com/Pavlov666/Auditron</a> · Licencia MIT</p>
+        <p>Desarrollado con <i class="fas fa-coffee"></i> por Pavlov Guernica · Auditoría de seguridad con estilo</p>
+    </div>
+</footer>
+
 </body>
 </html>
