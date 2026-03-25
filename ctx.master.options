@@ -1,0 +1,6 @@
+def configure(self, updates):
+    if "auditron_storage" in updates:
+        # Access options via ctx.master
+        new_path = ctx.master.options.auditron_storage
+        self.storage_dir = Path(new_path)
+        self.storage_dir.mkdir(parents=True, exist_ok=True)
