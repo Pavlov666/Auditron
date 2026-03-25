@@ -862,3 +862,6 @@ Si quieres cambiar la carpeta de logs, puedes exportar `AUDITRON_STORAGE_DIR` an
 ### Resumen
 
 Con este único script, tienes instalación automática, configuración de la IA y puesta en marcha de Auditron con un solo comando. Ya no necesitas recordar los pasos manuales.
+
+
+
