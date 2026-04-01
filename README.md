@@ -1,5 +1,8 @@
 # Auditron
-deep
+mondac.co | GranGuerra Logistics´s | Snack's Los Parce
+
+
+
 Manual Completo de Auditron – Proxy Interceptor tipo Burp Suite
 
 **Auditron** es un addon para mitmproxy que transforma a mitmproxy en una herramienta de interceptación de tráfico similar a Burp Suite. Permite capturar, modificar y analizar tráfico HTTP/HTTPS y WebSocket, extraer tokens e IDs, codificar/decodificar datos, y opcionalmente usar IA para análisis de seguridad.
@@ -25,9 +28,9 @@ Manual Completo de Auditron – Proxy Interceptor tipo Burp Suite
    pip install mitmproxy
    ```
 
-3. **Descargar el script** `Auditron.py` (el código completo que te proporcioné) y guardarlo en una carpeta, por ejemplo `~/Auditron.py`.
+3. **Descargar el script** `Auditron.py` 
 
-4. **Dar permisos de ejecución** (opcional):
+4. **Dar permisos de ejecución** 
    ```bash
    chmod +x ~/Auditron.py
    ```
@@ -80,16 +83,16 @@ http://mitm.it
 
 ## 3. Usar la interfaz de mitmproxy
 
-La interfaz principal es una pantalla de terminal con una lista de flujos (cada solicitud y su respuesta). Puedes navegar y manipularlos.
+La interfaz principal es una pantalla de terminal con una lista de flujos. 
 
 ### 3.1 Navegación básica
 - **↑/↓** : seleccionar un flujo
-- **Enter** : ver detalles completos (request y response)
+- **Enter** : ver detalles completos
 - **q** : volver atrás o salir de una vista
 - **Esc** : cerrar vistas emergentes
 - **Ctrl+C** : salir de mitmproxy
 
-### 3.2 Comandos interactivos (cuando un flujo está seleccionado)
+### 3.2 Comandos interactivos 
 - **e** : editar la solicitud o respuesta. Te permite modificar:
   - **e** (request) → puedes cambiar método, URL, headers, body.
   - **E** (response) → modificar respuesta.
@@ -97,23 +100,23 @@ La interfaz principal es una pantalla de terminal con una lista de flujos (cada 
 - **r** : repetir (replay) la solicitud. Puedes editarla antes de reenviar.
 - **d** : borrar flujo.
 - **f** : filtrar flujos (ej. `f ~u google.com` muestra solo peticiones a google).
-- **S** : guardar flujo seleccionado en archivo (formato .mitm).
-- **|** : ejecutar un comando sobre el flujo (útil para scripts).
-- **:** : abre la línea de comandos (comandos avanzados).
+- **S** : guardar flujo seleccionado en archivo 
+- **|** : ejecutar un comando sobre el flujo 
+- **:** : abre la línea de comandos 
 
-### 3.3 Modificar una solicitud en tiempo real (inyectar valores)
+### 3.3 Modificar una solicitud en tiempo real 
 1. Espera a que aparezca el flujo en la lista.
 2. Selecciónalo con las flechas.
 3. Pulsa **e** y elige **request**.
 4. Aparecerá el editor. Puedes cambiar:
    - **method** : GET, POST, etc.
    - **url** : la URL completa.
-   - **headers** : añade o modifica cabeceras (por ejemplo `Authorization: Bearer token`).
+   - **headers** : añade o modifica cabeceras 
    - **body** : cambia el contenido.
-5. Guarda con **Ctrl+O** (o la combinación que indique la ayuda) y sal del editor con **Ctrl+X**.
+5. Guarda y del editor con **Ctrl+X**
 6. Pulsa **a** para reenviar la solicitud modificada.
 
-Esto te permite **inyectar valores** en cualquier petición, como tokens, parámetros, o modificar el cuerpo de una API.
+Esto te permite **inyectar valores**
 
 ### 3.4 Replay de una solicitud
 - Selecciona un flujo.
@@ -133,7 +136,7 @@ El addon Auditron extrae automáticamente tokens JWT, UUIDs, IDs de parámetros 
 
 ---
 
-## 4. Herramienta de codificación/decodificación (línea de comandos)
+## 4. Herramienta de codificación/decodificación (línea de comandos
 
 Auditron incluye un conjunto de utilidades de codificación que puedes usar independientemente del proxy.
 
@@ -199,13 +202,13 @@ También puedes usar la interfaz de mitmproxy para verlos: selecciona un flujo, 
 
 ---
 
-## 6. Inyectar valores (modificar solicitudes/respuestas)
+## 6. Inyectar valores 
 
 La **inyección** se realiza en tiempo real usando los comandos de edición de mitmproxy (ver sección 3.3). Esto es útil para:
 - **Reemplazar tokens** (por ejemplo, si tienes un token JWT de sesión, puedes cambiarlo por otro).
 - **Modificar parámetros** de peticiones GET/POST.
-- **Cambiar cabeceras** (User-Agent, referer, cookies).
-- **Alterar respuestas** (por ejemplo, devolver un código 200 aunque el servidor de error 500).
+- **Cambiar cabeceras**(
+- **Alterar respuestas** 
 
 ### Ejemplo práctico: inyectar un token en una petición
 1. Navega a un sitio que requiera autenticación.
